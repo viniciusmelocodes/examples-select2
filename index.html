@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Examples Select2</title>
+
+        <!-- Bootstrap CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="content" style="margin: 30px;">
+            <h1 class="text-center">Examples Select2</h1>
+            
+            <div class="row">
+                <div class="col-lg-3">
+                    <label for="">Simple</label>
+                    <select class="js-example-basic-single" name="state" style="width: 100%">
+                        <option value="AL">Alabama</option>
+                        <option value="WY">Wyoming</option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label for="">Multiple</label>
+                    <select class="js-example-basic-multiple" name="states[]" multiple="multiple" style="width: 100%">
+                        <option value="AL">Alabama</option>
+                        <option value="WY">Wyoming</option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label for="">Placeholder</label>
+                    <select class="js-example-placeholder-single js-states form-control" style="width: 100%">
+                        <option value="AL">Alabama</option>
+                        <option value="WY">Wyoming</option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label for="">Ajax</label>
+                    <select class="js-data-example-ajax"></select>
+                </div>
+            </div>
+        </div>
+
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Bootstrap JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+        <script>
+            function formatUsers(state) {
+                if (state.loading) return "Looking up users...";
+                var markup = "<div class='d-flex flex-row'><div class='circle'><span class='initials'>" + initials(state.name) + 
+                    "</span></div><span class='ml-3 mt-1'>" + state.name + 
+                    "</span>&nbsp;" + statusIcon(state.status) + 
+                    "</div>";
+                return markup;
+            }
+
+            function initials(name) {
+                let rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
+                let initials = [...name.matchAll(rgx)] || [];
+                initials = ((initials.shift()?.[1] || '') + (initials.pop()?.[1] || '')).toUpperCase();
+                return initials;
+            }
+
+            function statusIcon(status) {
+                if(status == "active") return "<i class='fas fa-user-check status'></i>";
+                return "<i class='fas fa-user-times status'></i>";
+            }
+
+            $(function() {
+                let pageSize = 20;
+
+                $('.js-example-basic-single').select2();
+
+                $('.js-example-basic-multiple').select2();
+
+                $(".js-example-placeholder-single").select2({
+                    placeholder: "Select a state",
+                    allowClear: true
+                });
+
+                $('.js-data-example-ajax').select2({
+                    tokenSeparators: [',', ' '],
+                    minimumInputLength: 2,
+                    minimumResultsForSearch: 10,
+                    width: '100%',
+                    ajax: {
+                        theme: 'bootstrap',
+                        url: "https://gorest.co.in/public/v1/users",
+                        dataType : 'json',
+                        method: 'get',
+                        delay: 300,
+                        data: function (params) {
+                            return {
+                                name: params.term,
+                                page: params.page
+                            };
+                        },
+                        processResults: function (response, params) {
+                            params.page = params.page || 1;
+
+                            var select2Data = $.map(response.data, function (obj) {
+                                obj.text = obj.name;
+                                return obj;
+                            });
+
+                            return {
+                                results: select2Data,
+                                pagination: {
+                                    more: (params.page * pageSize) < response.meta.pagination.total
+                                }
+                            };
+                        }
+                    },
+                    placeholder: "Search users (case sensitive)...",
+                    escapeMarkup: function (markup) { return markup; },
+                    templateResult: formatUsers
+                });
+            });
+        </script>
+    </body>
+</html>
